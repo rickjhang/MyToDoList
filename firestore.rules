@@ -1,0 +1,33 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 使用者檔案：僅本人可編輯，登入使用者可讀取
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // 協作清單：清單成員或擁有者可讀寫
+    match /lists/{listId} {
+      // 任何登入使用者皆可讀取已加入的清單，或在輸入清單 ID 加入前進行查詢
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      
+      // 更新條件：登入使用者可更新 (例如透過邀請碼把自己加入 members 陣列，或成員編輯清單)
+      allow update: if request.auth != null && (
+        resource.data.members.hasAny([request.auth.token.email]) ||
+        request.resource.data.members.hasAny([request.auth.token.email]) ||
+        resource.data.ownerId == request.auth.uid
+      );
+      
+      // 刪除條件：僅擁有者可刪除清單
+      allow delete: if request.auth != null && resource.data.ownerId == request.auth.uid;
+
+      // 清單內的待辦事項 (Todos) 子集合
+      match /todos/{todoId} {
+        allow read, write: if request.auth != null;
+      }
+    }
+  }
+}

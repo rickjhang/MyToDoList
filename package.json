@@ -1,0 +1,12 @@
+{
+  "name": "my-to-do-list",
+  "version": "1.0.0",
+  "description": "即時多人協作待辦清單 (Firebase: my-to-do-list-eca14)",
+  "scripts": {
+    "start": "python3 serve.py",
+    "serve": "npx serve -l 3000 ."
+  },
+  "keywords": ["firebase", "todo", "collaboration", "google-auth"],
+  "author": "",
+  "license": "MIT"
+}
