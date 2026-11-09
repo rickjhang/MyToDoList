@@ -348,7 +348,17 @@ function subscribeToUserLists() {
     }
   }, (error) => {
     console.error("監聽清單失敗:", error);
-    showToast(`載入清單失敗: ${error.message}`, "error");
+    if (error.code === 'not-found' || (error.message && error.message.includes('not exist'))) {
+      showToast("尚未在 Firebase 控制台建立 Firestore 資料庫", "warning");
+      const goCreate = confirm("⚠️ 您的 Firebase 專案 (my-to-do-list-eca14) 尚未建立 Cloud Firestore 資料庫！\n\n點擊「確定」將為您開啟 Firestore 控制台，點擊「建立資料庫 (Create database)」即可啟用；\n若想先試用功能，可點擊「取消」切換至展示體驗模式。");
+      if (goCreate) {
+        window.open("https://console.firebase.google.com/project/my-to-do-list-eca14/firestore", "_blank");
+      } else {
+        startDemoMode();
+      }
+    } else {
+      showToast(`載入清單失敗: ${error.message}`, "error");
+    }
   });
 }
 
