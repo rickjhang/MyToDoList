@@ -365,7 +365,32 @@ function subscribeToUserLists() {
     }
   }, (error) => {
     console.error("監聽清單失敗:", error);
-    if (error.code === 'not-found' || (error.message && error.message.includes('not exist'))) {
+    if (error.code === 'permission-denied' || (error.message && error.message.toLowerCase().includes('permission'))) {
+      showToast("Firestore 規則尚未發布，權限不足 (permission-denied)", "error");
+      listsContainer.innerHTML = `
+        <div class="p-4 text-center text-xs">
+          <div class="w-10 h-10 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto mb-3">
+            <i data-lucide="shield-alert" class="w-5 h-5"></i>
+          </div>
+          <p class="font-bold text-slate-800 mb-1">Firestore 規則尚未發布</p>
+          <p class="text-[11px] text-slate-500 mb-4 leading-relaxed">
+            Firebase 預設禁止讀寫。請前往 Firebase 控制台的「規則」頁籤，貼上規則並點擊發布。
+          </p>
+          <a href="https://console.firebase.google.com/project/my-to-do-list-eca14/firestore/rules" target="_blank" class="block w-full py-2 px-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-medium shadow-sm mb-2 text-center">
+            前往發布規則 (Publish)
+          </a>
+          <button id="retry-load-lists-btn" class="w-full py-1.5 text-xs text-slate-600 hover:text-indigo-600 border border-slate-200 rounded-lg">
+            已發布，點此重新載入
+          </button>
+        </div>
+      `;
+      activeListTitle.textContent = "等待 Firestore 規則發布";
+      activeListDesc.textContent = "請在 Firebase 控制台點擊「發布」規則後，點擊左側重新載入。";
+      document.getElementById('retry-load-lists-btn')?.addEventListener('click', () => {
+        window.location.reload();
+      });
+      if (window.lucide) window.lucide.createIcons();
+    } else if (error.code === 'not-found' || (error.message && error.message.includes('not exist'))) {
       showToast("尚未在 Firebase 控制台建立 Firestore 資料庫", "warning");
       const goCreate = confirm("⚠️ 您的 Firebase 專案 (my-to-do-list-eca14) 尚未建立 Cloud Firestore 資料庫！\n\n點擊「確定」將為您開啟 Firestore 控制台，點擊「建立資料庫 (Create database)」即可啟用；\n若想先試用功能，可點擊「取消」切換至展示體驗模式。");
       if (goCreate) {
@@ -375,6 +400,12 @@ function subscribeToUserLists() {
       }
     } else {
       showToast(`載入清單失敗: ${error.message}`, "error");
+      listsContainer.innerHTML = `
+        <div class="p-4 text-center text-xs text-rose-600">
+          載入清單失敗：${escapeHtml(error.message)}
+          <button onclick="window.location.reload()" class="block mx-auto mt-2 text-indigo-600 underline">重新整理</button>
+        </div>
+      `;
     }
   });
 }
