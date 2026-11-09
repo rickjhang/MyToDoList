@@ -1,6 +1,15 @@
 # MyToDoList - 多人協作待辦清單網頁應用程式
 
+[![Live Demo](https://img.shields.io/badge/Demo-Live%20on%20GitHub%20Pages-success?style=for-the-badge&logo=github)](https://rickjhang.github.io/MyToDoList/)
+[![Firebase](https://img.shields.io/badge/Firebase-my--to--do--list--eca14-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://console.firebase.google.com/project/my-to-do-list-eca14/overview)
+
 專為團隊與多人協作設計的現代化待辦清單網頁應用程式，已配置支援現有 Firebase 專案 **`my-to-do-list-eca14`**，具備 **Google 帳號登入**、**Firestore 毫秒級即時同步**、**多專案清單管理**、**邀請代碼分享**、**成員任務指派**、**優先權與截止日管理** 等豐富功能。
+
+---
+
+## 🌐 線上正式版本 (Live Site)
+
+👉 **立即在線體驗：[https://rickjhang.github.io/MyToDoList/](https://rickjhang.github.io/MyToDoList/)**
 
 ---
 
