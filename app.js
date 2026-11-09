@@ -186,70 +186,81 @@ function checkFirebaseConfig() {
 
 // Initialize Application
 function initializeAppLogic() {
-  const isReady = checkFirebaseConfig();
+  try {
+    const isReady = checkFirebaseConfig();
 
-  // If real API key is ready, prefer real Firebase unless demo mode is explicitly active
-  const savedMode = localStorage.getItem("my_todo_mode");
-  if (savedMode === "demo") {
-    startDemoMode();
-    return;
-  }
+    // If real API key is ready, prefer real Firebase unless demo mode is explicitly active
+    const savedMode = localStorage.getItem("my_todo_mode");
+    if (savedMode === "demo") {
+      startDemoMode();
+      return;
+    }
 
-  if (!isReady) {
-    authLoading.classList.add('hidden');
-    googleLoginBtn.classList.remove('hidden');
-    welcomeView.classList.remove('hidden');
-    appWorkspace.classList.add('hidden');
-    return;
-  }
-
-  const res = initFirebase();
-  if (!res.initialized) {
-    authLoading.classList.add('hidden');
-    configAlertBanner.classList.remove('hidden');
-    return;
-  }
-
-  auth = res.auth;
-  db = res.db;
-  googleProvider = res.googleProvider;
-
-  // Listen for Auth changes
-  onAuthStateChanged(auth, async (user) => {
-    authLoading.classList.add('hidden');
-    if (user) {
-      currentUser = user;
-      isDemoMode = false;
-      demoModeBadge.classList.add('hidden');
-      updateUserUI(user);
-      // Sync user profile to Firestore
-      try {
-        await setDoc(doc(db, 'users', user.uid), {
-          uid: user.uid,
-          displayName: user.displayName || user.email.split('@')[0],
-          email: user.email,
-          photoURL: user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || user.email)}&background=random`,
-          lastLogin: serverTimestamp()
-        }, { merge: true });
-      } catch (err) {
-        console.warn("無法寫入使用者資料庫文檔:", err);
-      }
-
-      welcomeView.classList.add('hidden');
-      appWorkspace.classList.remove('hidden');
-      subscribeToUserLists();
-    } else {
-      currentUser = null;
-      currentListId = null;
-      userProfile.classList.add('hidden');
+    if (!isReady) {
+      authLoading.classList.add('hidden');
       googleLoginBtn.classList.remove('hidden');
       welcomeView.classList.remove('hidden');
       appWorkspace.classList.add('hidden');
-      if (unsubscribeLists) unsubscribeLists();
-      if (unsubscribeTodos) unsubscribeTodos();
+      if (window.lucide) window.lucide.createIcons();
+      return;
     }
+
+    const res = initFirebase();
+    if (!res.initialized) {
+      authLoading.classList.add('hidden');
+      configAlertBanner.classList.remove('hidden');
+      googleLoginBtn.classList.remove('hidden');
+      welcomeView.classList.remove('hidden');
+      if (window.lucide) window.lucide.createIcons();
+      return;
+    }
+
+    auth = res.auth;
+    db = res.db;
+    googleProvider = res.googleProvider;
+
+    // Listen for Auth changes
+    onAuthStateChanged(auth, async (user) => {
+      authLoading.classList.add('hidden');
+      if (user) {
+        currentUser = user;
+        isDemoMode = false;
+        demoModeBadge.classList.add('hidden');
+        updateUserUI(user);
+        try {
+          await setDoc(doc(db, 'users', user.uid), {
+            uid: user.uid,
+            displayName: user.displayName || user.email.split('@')[0],
+            email: user.email,
+            photoURL: user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || user.email)}&background=random`,
+            lastLogin: serverTimestamp()
+          }, { merge: true });
+        } catch (err) {
+          console.warn("無法寫入使用者資料庫文檔:", err);
+        }
+
+        welcomeView.classList.add('hidden');
+        appWorkspace.classList.remove('hidden');
+        subscribeToUserLists();
+      } else {
+        currentUser = null;
+        currentListId = null;
+        userProfile.classList.add('hidden');
+        googleLoginBtn.classList.remove('hidden');
+        welcomeView.classList.remove('hidden');
+        appWorkspace.classList.add('hidden');
+        if (unsubscribeLists) unsubscribeLists();
+        if (unsubscribeTodos) unsubscribeTodos();
+      }
+      if (window.lucide) window.lucide.createIcons();
+    });
+  } catch (err) {
+    console.error("初始化錯誤:", err);
+    authLoading.classList.add('hidden');
+    googleLoginBtn.classList.remove('hidden');
+    welcomeView.classList.remove('hidden');
     if (window.lucide) window.lucide.createIcons();
-  });
+  }
 }
 
 // Update User Header Info
@@ -1241,3 +1252,16 @@ demoModeBadge.addEventListener('click', () => {
 });
 demoModeBadge.style.cursor = "pointer";
 demoModeBadge.title = "點擊切換回 Firebase 正式連線";
+
+// Fallback safety timeout: 避免任何網路延遲卡在「檢查登入狀態」
+setTimeout(() => {
+  if (authLoading && !authLoading.classList.contains('hidden') && !currentUser && !isDemoMode) {
+    authLoading.classList.add('hidden');
+    if (googleLoginBtn) googleLoginBtn.classList.remove('hidden');
+    if (welcomeView) welcomeView.classList.remove('hidden');
+    if (window.lucide) window.lucide.createIcons();
+  }
+}, 2500);
+
+// Start Application
+initializeAppLogic();
