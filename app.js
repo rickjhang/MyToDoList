@@ -186,14 +186,15 @@ function checkFirebaseConfig() {
 
 // Initialize Application
 function initializeAppLogic() {
-  // Check if user previously chosen demo mode
+  const isReady = checkFirebaseConfig();
+
+  // If real API key is ready, prefer real Firebase unless demo mode is explicitly active
   const savedMode = localStorage.getItem("my_todo_mode");
   if (savedMode === "demo") {
     startDemoMode();
     return;
   }
 
-  const isReady = checkFirebaseConfig();
   if (!isReady) {
     authLoading.classList.add('hidden');
     googleLoginBtn.classList.remove('hidden');
@@ -1222,5 +1223,11 @@ function saveDemoState() {
   }));
 }
 
-// Start app
-initializeAppLogic();
+demoModeBadge.addEventListener('click', () => {
+  if (confirm("要切換回 Firebase (my-to-do-list-eca14) 正式連線與 Google 登入嗎？")) {
+    localStorage.removeItem("my_todo_mode");
+    window.location.reload();
+  }
+});
+demoModeBadge.style.cursor = "pointer";
+demoModeBadge.title = "點擊切換回 Firebase 正式連線";
