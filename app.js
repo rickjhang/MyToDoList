@@ -298,6 +298,12 @@ async function handleGoogleLogin() {
       } else {
         openModal(configModal);
       }
+    } else if (error.code === 'auth/unauthorized-domain') {
+      showToast("此網域尚未加入 Firebase 授權網域清單", "error");
+      const openSettings = confirm(`⚠️ 網域未授權錯誤 (auth/unauthorized-domain)\n\n目前網域 (${window.location.hostname}) 尚未加入 Firebase 的授權網域中。\n\n點擊「確定」將為您開啟設定頁面，請在「已授權的網域」點擊新增：\n${window.location.hostname}\n\n儲存後即可直接登入！`);
+      if (openSettings) {
+        window.open("https://console.firebase.google.com/project/my-to-do-list-eca14/authentication/settings", "_blank");
+      }
     } else {
       showToast(`登入錯誤: ${error.message}`, "error");
     }
